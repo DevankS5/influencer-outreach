@@ -1,0 +1,15 @@
+{
+  "name": "Signal evidence-first outreach",
+  "type": "documentation manifest, not an n8n import",
+  "trigger": "manual CLI invocation",
+  "steps": [
+    {"stage": "discovery", "command": "python -m outreach.cli discover --provider bluesky --limit 100"},
+    {"stage": "filtering_and_enrichment", "execution": "performed per observed record during discovery"},
+    {"stage": "personalization", "command": "python -m outreach.cli generate --generator llm --overwrite", "needs": "LLM_API_KEY"},
+    {"stage": "human_review", "command": "python -m outreach.cli serve"},
+    {"stage": "sending", "command": "python -m outreach.cli send", "default": "simulation; only approved qualified valid-email contacts"},
+    {"stage": "tracking", "command": "python -m outreach.cli export"}
+  ],
+  "instagram": "manual draft only; no automatic sending",
+  "deduplication": "atomic SQLite delivery reservations scoped by campaign, email/profile and mode"
+}
