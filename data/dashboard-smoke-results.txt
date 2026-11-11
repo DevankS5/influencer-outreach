@@ -1,0 +1,6 @@
+HTTP checks: health OK; unauthorized API returns 401; authorized API returns 100 profiles and 17 messages; 1 simulated delivery; cross-origin mutation returns 403.
+Browser checks: Chromium opened dashboard, authenticated, searched Andy Greenberg, selected creator, rendered evidence and email/DM details; no JavaScript page errors.
+Actual dashboard screenshot: docs/dashboard.png.
+
+UI redesign validation: authenticated loading; 100 all / 17 qualified / 1 contactable filters; creator search; audience sorting; Email pitch and Instagram DM tabs; activity table; outreach-only view; empty state; 390px mobile viewport without horizontal overflow; standalone preview refresh; no JavaScript errors.
+Opaque-origin iframe validation: embedded snapshot renders with sandbox=allow-scripts and no network; blocked storage access is handled; mutation controls explicitly reject read-only snapshot actions.

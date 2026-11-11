@@ -1,0 +1,13 @@
+{
+  "exported_at": "2026-11-09T17:32:45.826647+00:00",
+  "campaign_id": "tech-ugc-2026",
+  "discovered": 100,
+  "passed": 17,
+  "with_public_email": 57,
+  "messages": 17,
+  "deliveries": 1,
+  "generators": [
+    "offline-evidence-fallback"
+  ],
+  "warning": "Public metrics are observations, not verified reach. Missing demographics are unknown. Offline generators are not LLM output."
+}

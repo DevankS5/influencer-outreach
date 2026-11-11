@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "event": "discovery_complete",
+    "detail": "provider=bluesky requested=100 fetched=100",
+    "created_at": "2026-11-09T17:31:42.682739+00:00"
+  },
+  {
+    "id": 2,
+    "event": "review",
+    "detail": "did:plc:zbxq6fbw575t4nakfot3epen campaign=tech-ugc-2026 approved=True",
+    "created_at": "2026-11-09T17:32:45.331759+00:00"
+  }
+]
