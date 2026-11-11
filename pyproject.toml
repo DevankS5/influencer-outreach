@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "signal-influencer-outreach"
+version = "1.0.0"
+description = "Evidence-first public influencer discovery and reviewable outreach"
+requires-python = ">=3.10"
+dependencies = ["requests>=2.32.3,<3"]
+[project.scripts]
+signal-outreach = "outreach.cli:main"
+[tool.setuptools]
+packages = ["outreach"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
