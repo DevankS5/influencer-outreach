@@ -1,12 +1,16 @@
 import json
 import os
 import secrets
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 from .config import ROOT
 from .db import profiles, messages, connect
 from .sending import approve, send
 from .personalization import generate
+
+
+_last_generate=0.0
 
 
 def make_handler(campaign, token=''):
@@ -40,6 +44,11 @@ def make_handler(campaign, token=''):
                 if self.path=='/api/review': approve(data['id'],campaign,bool(data.get('approved',True))); return self.reply({'ok':True})
                 if self.path=='/api/simulate': return self.reply({'results':send(campaign,profile_id=data.get('id'))})
                 if self.path=='/api/generate':
+                    # ponytail: per-instance cooldown keeps a public demo from draining the LLM quota;
+                    # use a shared rate limiter if this is ever multi-tenant.
+                    global _last_generate
+                    if time.monotonic()-_last_generate<4: return self.reply({'error':'One AI draft every few seconds, please retry shortly.'},429)
+                    _last_generate=time.monotonic()
                     p=next((p for p in profiles() if p['id']==data['id']),None)
                     if not p: raise ValueError('Unknown profile')
                     if not generate(p,campaign,'llm',overwrite=True): raise ValueError('Only qualified creators get drafts')

@@ -17,4 +17,7 @@ db.init()
 if not db.profiles():
     restore(campaign_id())
 
-handler = make_handler(campaign_id(), os.getenv('DASHBOARD_TOKEN', ''))
+# Open read-only demo for reviewers: sending is simulation-only (no SMTP, LIVE_SEND_ENABLED=no) and the data
+# is the public snapshot with third-party emails redacted. Set DASHBOARD_TOKEN to lock it down.
+class handler(make_handler(campaign_id(), os.getenv('DASHBOARD_TOKEN', ''))):
+    pass
