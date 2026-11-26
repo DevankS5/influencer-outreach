@@ -138,6 +138,7 @@ def test_mocked_llm(creator,monkeypatch):
     monkeypatch.setenv('LLM_API_KEY','test-key-not-real')
     m=offline_message(creator)
     class Response:
+        status_code=200
         def raise_for_status(self): pass
         def json(self): return {'choices':[{'message':{'content':json.dumps(m)}}]}
     monkeypatch.setattr('outreach.personalization.requests.post',lambda *a,**kw:Response())

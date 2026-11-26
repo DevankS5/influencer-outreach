@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import time
 import requests
 from .config import brand
 from .db import connect, now
@@ -24,18 +25,26 @@ def llm_message(p):
     payload={'brand':brand(),'creator':{'name':p['name'],'platform':p['platform'],'bio':p.get('bio','')[:1500],
         'themes':p.get('content_themes',[]),'posts':[{'text':x['text'][:700],'url':x['url']} for x in p.get('recent_posts',[])[:4]]}}
     messages=[{'role':'system','content':SYSTEM},{'role':'user','content':json.dumps(payload)}]
-    for attempt in range(3):
+    for attempt in range(4):
         # Do not log authorization headers or full request failures.
+        m=None
         try:
             r=requests.post(os.getenv('LLM_BASE_URL','https://api.openai.com/v1').rstrip('/')+'/chat/completions',
                 headers={'Authorization':'Bearer '+key},json={'model':os.getenv('LLM_MODEL','gpt-4o-mini'),'temperature':0.7,
                 'response_format':{'type':'json_object'},'messages':messages},timeout=(10,70))
+            if r.status_code==429:  # free-tier rate limit: wait as told, then retry
+                time.sleep(min(float(r.headers.get('retry-after','5') or 5),20)); continue
             r.raise_for_status()
-            m=json.loads(r.json()['choices'][0]['message']['content'])
+            content=r.json()['choices'][0]['message']['content']
+            m=json.loads(content)
             return validate(m)
         except (requests.RequestException, ValueError, KeyError, IndexError) as e:
-            if attempt==2: raise ValueError('LLM generation failed after 3 attempts; inspect provider configuration and quotas.') from None
-            messages.append({'role':'user','content':'Previous output failed schema, length, or API validation. Return the required JSON; email 60–90 words and DM 15–30 words.'})
+            if attempt==3: raise ValueError('LLM generation failed after 4 attempts; inspect provider configuration and quotas.') from None
+            # Tell the model exactly what failed (word counts), so the retry converges instead of repeating.
+            counts=''
+            if isinstance(m,dict):
+                counts=f" Your email_body had {word_count(str(m.get('email_body','')))} words and dm had {word_count(str(m.get('dm','')))} words."
+            messages.append({'role':'user','content':f'Previous output failed validation: {str(e)[:120]}.{counts} Return the required JSON; email_body 60–90 words and dm 15–30 words.'})
 
 def offline_message(p):
     """Evidence-based local fallback, explicitly NOT an LLM."""
