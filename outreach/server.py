@@ -6,12 +6,10 @@ from urllib.parse import urlparse
 from .config import ROOT
 from .db import profiles, messages, connect
 from .sending import approve, send
+from .personalization import generate
 
 
-def serve(campaign):
-    host=os.getenv('HOST','127.0.0.1'); token=os.getenv('DASHBOARD_TOKEN','')
-    if host not in ('127.0.0.1','localhost','::1') and len(token)<24:
-        raise ValueError('A DASHBOARD_TOKEN of at least 24 characters is required for non-loopback binding')
+def make_handler(campaign, token=''):
     class Handler(BaseHTTPRequestHandler):
         def reply(self, data, status=200, content_type='application/json'):
             raw=data if isinstance(data,bytes) else json.dumps(data).encode()
@@ -41,8 +39,21 @@ def serve(campaign):
                 data=json.loads(self.rfile.read(length))
                 if self.path=='/api/review': approve(data['id'],campaign,bool(data.get('approved',True))); return self.reply({'ok':True})
                 if self.path=='/api/simulate': return self.reply({'results':send(campaign,profile_id=data.get('id'))})
+                if self.path=='/api/generate':
+                    p=next((p for p in profiles() if p['id']==data['id']),None)
+                    if not p: raise ValueError('Unknown profile')
+                    if not generate(p,campaign,'llm',overwrite=True): raise ValueError('Only qualified creators get drafts')
+                    return self.reply({'ok':True})
                 return self.reply({'error':'Not found'},404)
             except (ValueError,KeyError,TypeError) as e: return self.reply({'error':str(e)},400)
         def log_message(self, fmt,*args): pass
+    return Handler
+
+
+def serve(campaign):
+    host=os.getenv('HOST','127.0.0.1'); token=os.getenv('DASHBOARD_TOKEN','')
+    if host not in ('127.0.0.1','localhost','::1') and len(token)<24:
+        raise ValueError('A DASHBOARD_TOKEN of at least 24 characters is required for non-loopback binding')
+    Handler=make_handler(campaign, token)
     print(f'Dashboard running on {host}:{os.getenv("PORT","8000")}',flush=True)
     ThreadingHTTPServer((host,int(os.getenv('PORT','8000'))),Handler).serve_forever()
