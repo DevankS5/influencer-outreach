@@ -1,0 +1,10 @@
+.git
+.venv
+tests
+docs
+*.sqlite3*
+.env*
+.vercel
+README.md
+Makefile
+Dockerfile
