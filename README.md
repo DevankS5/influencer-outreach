@@ -1,5 +1,7 @@
 # Signal — Automated Micro-Influencer Outreach
 
+**Live demo: https://influencer-outreach-psi.vercel.app** (real public Bluesky snapshot, real LLM drafts, *Regenerate with AI* writes a fresh draft live; sending is simulation-only and review state resets when the serverless instance restarts).
+
 A runnable, modular Python prototype for the EDXSO AI Engineer Intern assignment. Public discovery → evidence-based filtering → literal email enrichment → personalized email + Instagram-ready DM → human review → duplicate-safe simulation or TLS SMTP → CSV tracking.
 
 **No API key is required for public Bluesky discovery or the included offline demonstration.** OpenAI-compatible AI generation, YouTube discovery, and actual SMTP sending require your own credentials.
@@ -22,7 +24,7 @@ Real public observations collected on **9 November 2026 (UTC)**, not invented re
 | Simulated email attempts | 1 |
 | Real emails / automated DMs sent | 0 / 0 |
 
-The local messages are explicitly labeled `offline-evidence-fallback`, **not LLM output**. The real LLM implementation is complete but has not been exercised with a paid API key. A public email occurrence is **not** proof of mailbox ownership, permission, or deliverability.
+Email and DM drafts in the live demo and `data/export/messages_llm.json` were written by a real LLM (Groq, `openai/gpt-oss-120b`) and passed the same schema and word-count validation; the generator column says so. The `offline-evidence-fallback` templates remain for runs without a key and are labeled as such. A public email occurrence is **not** proof of mailbox ownership, permission, or deliverability.
 
 Artifacts:
 - `data/export/influencers.csv`: every discovered profile, metrics, status, reasons, sources.
@@ -50,6 +52,10 @@ The working UI is still served by the same `python -m outreach.cli serve` comman
 Mobile view: `docs/dashboard-mobile.png`.
 
 After deliberately changing the underlying dataset, optionally rebuild the offline preview with `python scripts/build_preview.py`. This is not needed to open the included file.
+
+## Deploy (Vercel)
+
+`api/index.py` serves the same stdlib handler as `outreach.cli serve` on Vercel's Python runtime, seeded from `data/export/` into an ephemeral `/tmp` SQLite DB. Set `LLM_API_KEY`, `LLM_BASE_URL` (e.g. `https://api.groq.com/openai/v1`), `LLM_MODEL`, `BRAND_*` and `CAMPAIGN_OFFER` as project env vars, then `vercel deploy --prod`. Set `DASHBOARD_TOKEN` to require a bearer token.
 
 ## Quick start
 
